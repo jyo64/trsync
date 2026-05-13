@@ -54,6 +54,7 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     // Read stdout line by line (properly handles \r updates)
     let app_clone = app.clone();
     std::thread::spawn(move || {
+        println!("Starting Rsync Thread");
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
             if let Ok(line) = line {

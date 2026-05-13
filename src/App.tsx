@@ -1,9 +1,24 @@
 import { useState, useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import {
   Progress,
+  ProgressTrack,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressValue,
 } from "@/components/ui/progress"
+
+interface RsyncOptions {
+  source: string | string[]
+  destination: string
+  archive: boolean
+  verbose: boolean
+  delete: boolean
+  dry_run: boolean
+  progress: boolean  // Add progress flag
+}
 
 interface ProgressData {
   percentage: number
@@ -119,11 +134,22 @@ function App() {
     setOutput('')
     setProgressData({ percentage: 0, speed: '', size: '', currentFile: '' })
 
+    const opts: RsyncOptions = {
+      source,
+      destination: dest,
+      archive,
+      verbose,
+      delete: deleteFlag,
+      dry_run: dryRun,
+      progress,
+    }
+
     try {
-      setOutput(prev => prev + '\nRsync completed successfully!\n')
+      const result = await invoke<string>('run_rsync', { opts })
+      setOutput(prev => prev + '\n✅ Rsync completed successfully!\n')
       setProgressData(prev => ({ ...prev, percentage: 100 }))
     } catch (error: any) {
-      setOutput(prev => prev + `\nFailed: ${error}\n`)
+      setOutput(prev => prev + `\n❌ Failed: ${error}\n`)
     } finally {
       setIsRunning(false)
     }
@@ -148,7 +174,7 @@ function App() {
                 onClick={async () => {
                   const selected = await open({
                     directory: true,
-                    multiple: false,
+                    multiple: true,
                     title: "Select Source Folder"
                   })
                   if (selected) setSource(selected)
