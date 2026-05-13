@@ -1,17 +1,28 @@
 name: Publish Release
 
 on:
+  workflow_dispatch: # Allow manual triggers from the Actions tab
   push:
     tags:
       - 'v*'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   release-linux:
     name: Build Linux Release (.deb + .rpm)
-    runs-on: ubuntu-22.04
-
     permissions:
       contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: ubuntu-22.04      # x86_64
+          - platform: ubuntu-22.04-arm  # aarch64 — free for public repos (Aug 2025+)
+
+    runs-on: ${{ matrix.platform }}
 
     steps:
       - name: Checkout repository
@@ -34,42 +45,28 @@ jobs:
       - name: Restore Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: |
-            src-tauri -> target
+          workspaces: src-tauri -> target
 
       - name: Install Linux system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libgtk-3-dev \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
-            patchelf \
-            libsoup-3.0-dev \
-            libjavascriptcoregtk-4.1-dev \
-            libsquashfs-dev \
-            libssl-dev \
-            libsecret-1-dev \
-            rpm \
-            file \
-            curl \
-            wget
+            patchelf
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build frontend
-        run: pnpm build
-
-      - name: Build Tauri app and upload release assets
+      - name: Build Tauri app and publish release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
           releaseName: 'App ${{ github.ref_name }}'
-          releaseBody: 'Linux release artifacts for ${{ github.ref_name }}.'
-          releaseDraft: false
+          releaseBody: 'See the assets below to download and install this version.'
+          releaseDraft: true   # Review the draft before publishing
           prerelease: false
           args: --bundles deb,rpm
