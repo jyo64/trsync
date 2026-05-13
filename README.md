@@ -19,7 +19,7 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 
 - **Frontend:** React (TypeScript)
 - **Backend:** Rust
-- **Desktop Shell:** Tauri
+- **Desktop Shell:** Tauri 2.0
 - **Core Engine:** rsync
 
 ## How It Works
