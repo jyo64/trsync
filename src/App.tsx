@@ -141,7 +141,7 @@ function App() {
     }
 
     try {
-      const result = await invoke<string>('run_rsync', { opts })
+      await invoke<string>('run_rsync', { opts })
       setOutput(prev => prev + '\n✅ Rsync completed successfully!\n')
       setProgressData(prev => ({ ...prev, percentage: 100 }))
     } catch (error: any) {
