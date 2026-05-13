@@ -1,5 +1,8 @@
 # Trsync
 
+<img width="846" height="756" alt="Screenshot_20260513_165501" src="https://github.com/user-attachments/assets/6442e95e-7156-4865-8a47-20094c438c17" />
+
+
 A modern GUI wrapper for [`rsync`](https://github.com/RsyncProject/rsync) built with **Tauri (React frontend)** and **Rust backend**, designed to simplify file synchronization with an intuitive graphical interface.
 
 ## Overview
