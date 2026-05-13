@@ -14,7 +14,7 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 
 - 📁 Graphical file and folder selection
 - 📦 Multi-file sync support
-- 🌐 SSH Support
+- 🌐 SSH Support. A graphical alternative to the SCP tool.
 - 🔄 Powered by `rsync` for efficient delta transfers
 - ⚡ Fast and lightweight (Tauri-based desktop app)
 - 🦀 Secure backend logic in Rust
