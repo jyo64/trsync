@@ -14,7 +14,9 @@
       {
         "title": "Trsync",
         "width": 800,
-        "height": 700
+        "height": 700,
+        "transparent": false,
+        "theme": "Light"
       }
     ],
     "security": {
