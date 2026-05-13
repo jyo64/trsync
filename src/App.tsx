@@ -37,6 +37,7 @@ function App() {
   const [progress, setProgress] = useState(true)  // Add progress state
   const [output, setOutput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
+  const [outputExpanded, setOutputExpanded] = useState(false)
   const [progressData, setProgressData] = useState<ProgressData>({
     percentage: 0,
     speed: '',
@@ -259,10 +260,19 @@ function App() {
         </div>
 
         <div className="mt-8">
-          <h3 className="text-lg mb-3">Output</h3>
-          <pre className="bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
-            {output || 'Click "Run rsync" to start...'}
-          </pre>
+          <button
+            onClick={() => setOutputExpanded(!outputExpanded)}
+            className="w-full flex items-center justify-between text-lg mb-3 hover:text-zinc-300 transition-colors"
+          >
+            <h3>Output</h3>
+            <span>{outputExpanded ? '▼' : '▶'}</span>
+          </button>
+          
+          {outputExpanded && (
+            <pre className="bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
+              {output || 'Click "Run rsync" to start...'}
+            </pre>
+          )}
         </div>
 
         {progress && (isRunning || progressData.percentage > 0) && (
