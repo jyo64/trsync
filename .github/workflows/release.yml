@@ -6,7 +6,7 @@ on:
       - 'v*' # Triggers on version tags like v0.1.0
 
 jobs:
-  publish-tauri:
+  publish-trsync:
     permissions:
       contents: write
 
@@ -21,6 +21,8 @@ jobs:
         with:
           node-version: lts/*
           cache: 'pnpm'
+      - name: Install pnpm globally
+        run: npm install -g pnpm
 
       - name: Enable Corepack (pnpm)
         run: corepack enable
