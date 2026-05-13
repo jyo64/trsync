@@ -17,7 +17,7 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 - 🔄 Powered by `rsync` for efficient delta transfers
 - ⚡ Fast and lightweight (Tauri-based desktop app)
 - 🦀 Secure backend logic in Rust
-- 🖥 Tested only on Fedora Linux
+- ⚠️ Tested only on Fedora Linux
 
 
 ## Tech Stack
@@ -36,6 +36,12 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 5. Output is streamed back to the UI for status updates
 
 ## Installation
+
+### Pre-built Binaries
+
+You can download pre-built binaries for your platform from the [Releases](https://github.com/jyo64/trsync/releases) page. Available for both x86_64 and ARM64 architectures. ⚠️ Only .deb and .rpm packages are available at the moment.
+
+## Development
 
 ### Prerequisites
 
