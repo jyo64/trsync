@@ -1,17 +1,18 @@
-// src-tauri/src/lib.rs
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::process::Command;
-use tauri::Emitter; // For sending live output
+use std::process::{Command, Stdio};
+use std::io::{BufRead, BufReader};
+use tauri::Emitter;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RsyncOptions {
     source: String,
     destination: String,
-    archive: bool,     // -a
-    verbose: bool,     // -v
-    delete: bool,      // --delete
-    dry_run: bool,     // -n
+    archive: bool,
+    verbose: bool,
+    delete: bool,
+    dry_run: bool,
+    progress: bool,  // Add progress flag
 }
 
 #[tauri::command]
@@ -31,26 +32,50 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     if opts.dry_run {
         cmd.arg("-n");
     }
+    if opts.progress {
+        cmd.arg("--progress");
+    }
 
     cmd.arg(&opts.source);
     cmd.arg(&opts.destination);
 
-    // For real-time output (nice for learning)
-    let output = cmd.output().map_err(|e| e.to_string())?;
+    // Spawn command with piped stdout/stderr for real-time reading
+    let mut child = cmd
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|e| e.to_string())?;
 
-    let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-    let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+    let stdout = child.stdout.take().unwrap();
+    let stderr = child.stderr.take().unwrap();
 
-    // Send output to frontend via events (optional but useful)
-    let _ = app.emit("rsync-output", &stdout);
-    if !stderr.is_empty() {
-        let _ = app.emit("rsync-error", &stderr);
-    }
+    // Spawn threads to read output in real-time
+    let app_clone = app.clone();
+    std::thread::spawn(move || {
+        let reader = BufReader::new(stdout);
+        for line in reader.lines() {
+            if let Ok(line) = line {
+                let _ = app_clone.emit("rsync-output", &line);
+            }
+        }
+    });
 
-    if output.status.success() {
-        Ok(stdout)
+    let app_clone = app.clone();
+    std::thread::spawn(move || {
+        let reader = BufReader::new(stderr);
+        for line in reader.lines() {
+            if let Ok(line) = line {
+                let _ = app_clone.emit("rsync-error", &line);
+            }
+        }
+    });
+
+    let output = child.wait().map_err(|e| e.to_string())?;
+
+    if output.success() {
+        Ok("Rsync completed".to_string())
     } else {
-        Err(stderr)
+        Err("Rsync failed".to_string())
     }
 }
 
@@ -59,7 +84,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_shell::init()) // Often useful, keep it
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![run_rsync])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

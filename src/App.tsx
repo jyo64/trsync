@@ -10,33 +10,76 @@ interface RsyncOptions {
   verbose: boolean
   delete: boolean
   dry_run: boolean
+  progress: boolean  // Add progress flag
+}
+
+interface ProgressData {
+  percentage: number
+  speed: string
+  size: string
+  currentFile: string
 }
 
 function App() {
   const [source, setSource] = useState('/home/jyo/test/source/')
   const [dest, setDest] = useState('/home/jyo/test/backup/')
-  const [archive, setArchive] = useState(true)
+  const [archive, setArchive] = useState(false)
   const [verbose, setVerbose] = useState(true)
   const [deleteFlag, setDeleteFlag] = useState(false)
-  const [dryRun, setDryRun] = useState(true)
+  const [dryRun, setDryRun] = useState(false)
+  const [progress, setProgress] = useState(true)  // Add progress state
   const [output, setOutput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
+  const [progressData, setProgressData] = useState<ProgressData>({
+    percentage: 0,
+    speed: '',
+    size: '',
+    currentFile: ''
+  })
 
-  // Listen to real-time output from Rust
+  // Parse rsync progress output
+  const parseProgress = (line: string) => {
+    // Pattern for rsync progress: "filename.ext\n  1234567  45%  1.23MB/s    0:00:15"
+    const progressMatch = line.match(/(\d+)\s+(\d+)%\s+([\d.]+[KMGT]?B\/s)?/)
+    const fileMatch = line.match(/^([^/\n]+\.?[^/\n]*)$/)
+    
+    if (progressMatch) {
+      const percentage = parseInt(progressMatch[2])
+      const speed = progressMatch[3] || ''
+      
+      setProgressData(prev => ({
+        ...prev,
+        percentage: percentage || 0,
+        speed: speed,
+      }))
+    } else if (fileMatch && !line.includes('%')) {
+      setProgressData(prev => ({
+        ...prev,
+        currentFile: fileMatch[1]
+      }))
+    }
+  }
+
   useEffect(() => {
     const outputListener = listen('rsync-output', (event) => {
-      setOutput(prev => prev + event.payload)
+      const line = event.payload as string
+      setOutput(prev => prev + line + '\n')
+      
+      // Parse progress if enabled
+      if (progress) {
+        parseProgress(line)
+      }
     })
 
     const errorListener = listen('rsync-error', (event) => {
-      setOutput(prev => prev + `\nERROR: ${event.payload}`)
+      setOutput(prev => prev + `\nERROR: ${event.payload}\n`)
     })
 
     return () => {
       outputListener.then(unlisten => unlisten())
       errorListener.then(unlisten => unlisten())
     }
-  }, [])
+  }, [progress])
 
   const runRsync = async () => {
     if (!source || !dest) {
@@ -45,7 +88,8 @@ function App() {
     }
 
     setIsRunning(true)
-    setOutput('🚀 Starting rsync...\n\n')
+    setOutput('')
+    setProgressData({ percentage: 0, speed: '', size: '', currentFile: '' })
 
     const opts: RsyncOptions = {
       source,
@@ -54,13 +98,15 @@ function App() {
       verbose,
       delete: deleteFlag,
       dry_run: dryRun,
+      progress,
     }
 
     try {
       const result = await invoke<string>('run_rsync', { opts })
-      setOutput(prev => prev + (result || '\n✅ Rsync completed successfully!'))
+      setOutput(prev => prev + '\n✅ Rsync completed successfully!\n')
+      setProgressData(prev => ({ ...prev, percentage: 100 }))
     } catch (error: any) {
-      setOutput(prev => prev + `\n❌ Failed: ${error}`)
+      setOutput(prev => prev + `\n❌ Failed: ${error}\n`)
     } finally {
       setIsRunning(false)
     }
@@ -71,6 +117,33 @@ function App() {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-5xl font-bold text-center mb-2">Trsync</h1>
 
+        {/* Progress Bar Section */}
+        {progress && progressData.percentage > 0 && (
+          <div className="mb-6 p-4 bg-zinc-900 rounded-xl border border-zinc-800">
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-blue-400">Progress</span>
+              <span>{progressData.percentage}%</span>
+            </div>
+            <div className="w-full bg-zinc-800 rounded-full h-2 mb-3">
+              <div 
+                className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${progressData.percentage}%` }}
+              />
+            </div>
+            {progressData.currentFile && (
+              <div className="text-xs text-zinc-400 mb-1">
+                📄 {progressData.currentFile}
+              </div>
+            )}
+            {progressData.speed && (
+              <div className="text-xs text-zinc-500">
+                Speed: {progressData.speed}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="space-y-4">
           <div>
             <label className="block text-sm mb-2">Source Path</label>
             <div className="flex gap-2">
@@ -150,6 +223,14 @@ function App() {
               <input type="checkbox" checked={dryRun} onChange={e => setDryRun(e.target.checked)} />
               Dry Run (-n)
             </label>
+            <label className="flex items-center gap-2">
+              <input 
+                type="checkbox" 
+                checked={progress} 
+                onChange={e => setProgress(e.target.checked)} 
+              />
+              Show Progress (--progress)
+            </label>
           </div>
 
           <button
@@ -159,8 +240,7 @@ function App() {
           >
             {isRunning ? 'Running...' : '🚀 Run rsync'}
           </button>
-        
-        
+        </div>
 
         <div className="mt-8">
           <h3 className="text-lg mb-3">Output</h3>
