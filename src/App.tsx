@@ -5,6 +5,9 @@ import { open } from '@tauri-apps/plugin-dialog'
 import {
   Progress
 } from "@/components/ui/progress"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Field, FieldLabel } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 
 interface RsyncOptions {
   source: string | string[]
@@ -154,8 +157,6 @@ function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-2">Trsync</h1>
-
         <div className="space-y-4">
           <div>
             <label className="block text-sm mb-2">Source Path</label>
@@ -222,39 +223,59 @@ function App() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={archive} onChange={e => setArchive(e.target.checked)} />
-              Archive (-a)
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={verbose} onChange={e => setVerbose(e.target.checked)} />
-              Verbose (-v)
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={deleteFlag} onChange={e => setDeleteFlag(e.target.checked)} />
-              --delete
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="checkbox" checked={dryRun} onChange={e => setDryRun(e.target.checked)} />
-              Dry Run (-n)
-            </label>
-            <label className="flex items-center gap-2">
-              <input 
-                type="checkbox" 
-                checked={progress} 
-                onChange={e => setProgress(e.target.checked)} 
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="archive" 
+                checked={archive} 
+                onCheckedChange={(checked) => setArchive(checked === true)}
               />
-              Show Progress (--progress)
-            </label>
+              <FieldLabel htmlFor="archive">Archive (-a)</FieldLabel>
+            </Field>
+            
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="verbose" 
+                checked={verbose} 
+                onCheckedChange={(checked) => setVerbose(checked === true)}
+              />
+              <FieldLabel htmlFor="verbose">Verbose (-v)</FieldLabel>
+            </Field>
+            
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="delete" 
+                checked={deleteFlag} 
+                onCheckedChange={(checked) => setDeleteFlag(checked === true)}
+              />
+              <FieldLabel htmlFor="delete">--delete</FieldLabel>
+            </Field>
+            
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="dryrun" 
+                checked={dryRun} 
+                onCheckedChange={(checked) => setDryRun(checked === true)}
+              />
+              <FieldLabel htmlFor="dryrun">Dry Run (-n)</FieldLabel>
+            </Field>
+            
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="progress" 
+                checked={progress} 
+                onCheckedChange={(checked) => setProgress(checked === true)}
+              />
+              <FieldLabel htmlFor="progress">Show Progress (--progress)</FieldLabel>
+            </Field>
           </div>
 
-          <button
+          <Button
             onClick={runRsync}
             disabled={isRunning}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 py-4 rounded-xl font-semibold text-lg transition"
           >
-            {isRunning ? 'Running...' : '🚀 Run rsync'}
-          </button>
+            {isRunning ? 'Running...' : 'Run rsync'}
+          </Button>
         </div>
 
         <div className="mt-8">
