@@ -120,10 +120,10 @@ function App() {
     setProgressData({ percentage: 0, speed: '', size: '', currentFile: '' })
 
     try {
-      setOutput(prev => prev + '\n✅ Rsync completed successfully!\n')
+      setOutput(prev => prev + '\nRsync completed successfully!\n')
       setProgressData(prev => ({ ...prev, percentage: 100 }))
     } catch (error: any) {
-      setOutput(prev => prev + `\n❌ Failed: ${error}\n`)
+      setOutput(prev => prev + `\nFailed: ${error}\n`)
     } finally {
       setIsRunning(false)
     }
