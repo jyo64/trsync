@@ -12,7 +12,7 @@ pub struct RsyncOptions {
     verbose: bool,
     delete: bool,
     dry_run: bool,
-    progress: bool,  // Add progress flag
+    progress: bool,
 }
 
 #[tauri::command]
@@ -34,12 +34,13 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     }
     if opts.progress {
         cmd.arg("--progress");
+        cmd.arg("--info=progress2");
     }
 
     cmd.arg(&opts.source);
     cmd.arg(&opts.destination);
 
-    // Spawn command with piped stdout/stderr for real-time reading
+    // Spawn command with piped stdout/stderr
     let mut child = cmd
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -49,23 +50,28 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     let stdout = child.stdout.take().unwrap();
     let stderr = child.stderr.take().unwrap();
 
-    // Spawn threads to read output in real-time
+    // Read stdout line by line (properly handles \r updates)
     let app_clone = app.clone();
     std::thread::spawn(move || {
         let reader = BufReader::new(stdout);
         for line in reader.lines() {
             if let Ok(line) = line {
-                let _ = app_clone.emit("rsync-output", &line);
+                let trimmed = line.trim();
+                if !trimmed.is_empty() {
+                    println!("Rust Transfer Progress - {}", trimmed); 
+                    let _ = app_clone.emit("rsync-output", trimmed.to_string());
+                }
             }
         }
     });
 
+    // Read stderr line by line
     let app_clone = app.clone();
     std::thread::spawn(move || {
         let reader = BufReader::new(stderr);
         for line in reader.lines() {
             if let Ok(line) = line {
-                let _ = app_clone.emit("rsync-error", &line);
+                let _ = app_clone.emit("rsync-error", line);
             }
         }
     });
