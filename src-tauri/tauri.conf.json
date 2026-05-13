@@ -25,7 +25,21 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["rpm"],
+    "targets": ["rpm", "deb", "appimage"],
+
+    "linux": {
+      "deb": {
+        "depends": [
+          "zenity"
+        ]
+      },
+
+      "rpm": {
+        "depends": [
+          "zenity"
+        ]
+      }
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
