@@ -4,6 +4,15 @@ use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use tauri::Emitter;
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct SshOptions {
+    enabled: bool,
+    username: String,
+    host: String,
+    port: Option<u16>, // Optional port field
+    is_alias: Option<bool>
+}
+
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RsyncOptions {
     source: Vec<String>,
@@ -13,6 +22,8 @@ pub struct RsyncOptions {
     delete: bool,
     dry_run: bool,
     progress: bool,
+    source_ssh: Option<SshOptions>,
+    dest_ssh: Option<SshOptions>,
 }
 
 #[tauri::command]
@@ -36,10 +47,57 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
         cmd.arg("--progress");
         cmd.arg("--info=progress2");
     }
-    for src in &opts.source {
-        cmd.arg(src);
+
+    if let Some(ssh) = opts.source_ssh {
+        if ssh.enabled {
+            if ssh.is_alias == Some(true) {
+                // Use alias directly - no -e flag needed for aliases from SSH config
+                for src in &opts.source {
+                    cmd.arg(format!("{}:{}", ssh.username, src));
+                }
+            } else {
+                let ssh_cmd = if let Some(port) = ssh.port {
+                    format!("ssh -p {} -l {}", port, ssh.username)
+                } else {
+                    format!("ssh -l {}", ssh.username)
+                };
+                cmd.arg("-e").arg(ssh_cmd);
+                for src in &opts.source {
+                    cmd.arg(format!("{}:{}", ssh.host, src));
+                }
+            }
+        } else {
+            for src in &opts.source {
+                cmd.arg(src);
+            }
+        }
+    } else {
+        for src in &opts.source {
+            cmd.arg(src);
+        }
     }
-    cmd.arg(&opts.destination);
+
+    // Add destination with SSH if enabled
+    if let Some(ssh) = opts.dest_ssh {
+        if ssh.enabled {
+            if ssh.is_alias == Some(true) {
+                // Use alias directly - no -e flag needed for aliases from SSH config
+                cmd.arg(format!("{}:{}", ssh.username, opts.destination));
+            } else {
+                let ssh_cmd = if let Some(port) = ssh.port {
+                    format!("ssh -p {} -l {}", port, ssh.username)
+                } else {
+                    format!("ssh -l {}", ssh.username)
+                };
+                cmd.arg("-e").arg(ssh_cmd);
+                cmd.arg(format!("{}:{}", ssh.host, opts.destination));
+            }
+        } else {
+            cmd.arg(&opts.destination);
+        }
+    } else {
+        cmd.arg(&opts.destination);
+    }
 
     // Spawn command with piped stdout/stderr
     let mut child = cmd

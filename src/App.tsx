@@ -10,14 +10,24 @@ import { Field, FieldLabel } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+interface SshOptions {
+  enabled: boolean
+  username: string
+  host: string
+  port?: number
+  is_alias: boolean
+}
+
 interface RsyncOptions {
-  source: string | string[]
+  source: string[]
   destination: string
   archive: boolean
   verbose: boolean
   delete: boolean
   dry_run: boolean
   progress: boolean  // Add progress flag
+  source_ssh?: SshOptions
+  dest_ssh?: SshOptions
 }
 
 interface ProgressData {
@@ -28,7 +38,23 @@ interface ProgressData {
 }
 
 function App() {
-  const [source, setSource] = useState<string | string[]>('/home/jyo/Downloads/I/File.mp4')
+
+    // Add SSH states
+  const [sourceSshEnabled, setSourceSshEnabled] = useState(false)
+  const [sourceSshUsername, setSourceSshUsername] = useState('')
+  const [sourceSshHost, setSourceSshHost] = useState('')
+  const [sourceSshPort, setSourceSshPort] = useState('22')
+  const [sourceSshIsAlias, setSourceSshIsAlias] = useState(false)
+  const [sourceSshAlias, setSourceSshAlias] = useState('')
+  
+  const [destSshEnabled, setDestSshEnabled] = useState(false)
+  const [destSshUsername, setDestSshUsername] = useState('')
+  const [destSshHost, setDestSshHost] = useState('')
+  const [destSshPort, setDestSshPort] = useState('22')
+  const [destSshIsAlias, setDestSshIsAlias] = useState(false)
+  const [destSshAlias, setDestSshAlias] = useState('')
+
+  const [source, setSource] = useState<string[]>(['/home/jyo/Downloads/Test.txt'])
   const [dest, setDest] = useState('/home/jyo/Downloads/O')
   const [archive, setArchive] = useState(false)
   const [verbose, setVerbose] = useState(true)
@@ -130,18 +156,60 @@ function App() {
       return
     }
 
+    if (sourceSshEnabled) {
+      if (sourceSshIsAlias) {
+        if (!sourceSshAlias) {
+          alert("Please enter SSH alias for source")
+          return
+        }
+      } else {
+        if (!sourceSshUsername || !sourceSshHost) {
+          alert("Please enter SSH username and host for source")
+          return
+        }
+      }
+    }
+
+    if (destSshEnabled) {
+      if (destSshIsAlias) {
+        if (!destSshAlias) {
+          alert("Please enter SSH alias for destination")
+          return
+        }
+      } else {
+        if (!destSshUsername || !destSshHost) {
+          alert("Please enter SSH username and host for destination")
+          return
+        }
+      }
+    }
+
     setIsRunning(true)
     setOutput('')
     setProgressData({ percentage: 0, speed: '', size: '', currentFile: '' })
 
     const opts: RsyncOptions = {
-      source,
+      source: source,
       destination: dest,
       archive,
       verbose,
       delete: deleteFlag,
       dry_run: dryRun,
       progress,
+      source_ssh: sourceSshEnabled ? {
+        enabled: true,
+        username: sourceSshIsAlias ? sourceSshAlias : sourceSshUsername,
+        host: sourceSshIsAlias ? '' : sourceSshHost,
+        port: sourceSshIsAlias ? undefined : (sourceSshPort ? parseInt(sourceSshPort) : undefined),
+        is_alias: sourceSshIsAlias
+      } : undefined,
+      dest_ssh: destSshEnabled ? {
+        enabled: true,
+        username: destSshIsAlias ? destSshAlias : destSshUsername,
+        host: destSshIsAlias ? '' : destSshHost,
+        port: destSshIsAlias ? undefined : (destSshPort ? parseInt(destSshPort) : undefined),
+        is_alias: destSshIsAlias
+      } : undefined,
     }
 
     try {
@@ -155,74 +223,276 @@ function App() {
     }
   }
 
+  // Helper function to convert array to string for display
+  const sourceToString = (sourceArray: string[]): string => {
+    return sourceArray.join(', ')
+  }
+
+  // Helper function to convert comma-separated string to array
+  const stringToSourceArray = (str: string): string[] => {
+    return str.split(',').map(s => s.trim()).filter(s => s)
+  }
+
   return (
     <div className="min-h-screen text-white p-8">
       <div className="max-w-2xl mx-auto">
         <div className="space-y-4">
+          {/* Source Path Section with SSH */}
           <div>
-            <label className="block text-base mb-2">Source Path</label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={Array.isArray(source) ? source.join(', ') : source}
-                onChange={(e) => setSource(e.target.value)}
-                className="flex-1 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
-              />
-              <Button
-                onClick={async () => {
-                  const selected = await open({
-                    directory: true,
-                    multiple: true,
-                    title: "Select Source Folder"
-                  })
-                  if (selected) setSource(selected)
-                }}
-                className="px-4 rounded-lg"
-              >
-                📁 Folder
-              </Button>
-              <Button
-                onClick={async () => {
-                  const selected = await open({
-                    multiple: true,
-                    filters: [{ name: "All Files", extensions: ["*"] }]
-                  })
-                  if (selected && selected.length > 0) {
-                    setSource(selected) // Store as array
-                  }
-                }}
-                className="px-4 rounded-lg"
-              >
-                📄 File(s)
-              </Button>
+            <div className="flex items-center gap-4 mb-2">
+              <label className="block text-base">Source Path</label>
+              <div className="flex items-center gap-2">
+                <Checkbox 
+                  id="sourceSsh"
+                  checked={sourceSshEnabled}
+                  onCheckedChange={(checked) => setSourceSshEnabled(checked === true)}
+                />
+                <FieldLabel htmlFor="sourceSsh">SSH</FieldLabel>
+              </div>
             </div>
+            
+            {sourceSshEnabled ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Checkbox 
+                    id="sourceSshIsAlias"
+                    checked={sourceSshIsAlias}
+                    onCheckedChange={(checked) => setSourceSshIsAlias(checked === true)}
+                  />
+                  <FieldLabel htmlFor="sourceSshIsAlias">Use SSH Alias</FieldLabel>
+                </div>
+                
+                {sourceSshIsAlias ? (
+                  <Input
+                    type="text"
+                    placeholder="SSH Alias (e.g., server1, production-server)"
+                    value={sourceSshAlias}
+                    onChange={(e) => setSourceSshAlias(e.target.value)}
+                    className="border rounded-lg px-4 py-3"
+                  />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        type="text"
+                        placeholder="Username"
+                        value={sourceSshUsername}
+                        onChange={(e) => setSourceSshUsername(e.target.value)}
+                        className="border rounded-lg px-4 py-3"
+                      />
+                      <Input
+                        type="text"
+                        placeholder="Host (e.g., 192.168.1.100)"
+                        value={sourceSshHost}
+                        onChange={(e) => setSourceSshHost(e.target.value)}
+                        className="border rounded-lg px-4 py-3"
+                      />
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="Port (optional, default: 22)"
+                      value={sourceSshPort}
+                      onChange={(e) => setSourceSshPort(e.target.value)}
+                      className="border rounded-lg px-4 py-3"
+                    />
+                  </>
+                )}
+                
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Remote Path"
+                    value={sourceToString(source)}
+                    onChange={(e) => setSource(stringToSourceArray(e.target.value))}
+                    className="flex-1 border rounded-lg px-4 py-3"
+                  />
+                  <Button
+                    onClick={async () => {
+                      const selected = await open({
+                        directory: true,
+                        multiple: true,
+                        title: "Select Source Folder"
+                      })
+                      if (selected) {
+                        const paths = Array.isArray(selected) ? selected : [selected]
+                        setSource(paths)
+                      }
+                    }}
+                    className="px-4 rounded-lg"
+                  >
+                    📁 Folder
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      const selected = await open({
+                        multiple: true,
+                        filters: [{ name: "All Files", extensions: ["*"] }]
+                      })
+                      if (selected && selected.length > 0) {
+                        setSource(selected)
+                      }
+                    }}
+                    className="px-4 rounded-lg"
+                  >
+                    📄 File(s)
+                  </Button>
+                </div>
+                <p className="text-xs">
+                  Format: /path/to/file or multiple: /path1,/path2 (comma separated)
+                </p>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={sourceToString(source)}
+                  onChange={(e) => setSource(stringToSourceArray(e.target.value))}
+                  className="flex-1 border rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                />
+                <Button
+                  onClick={async () => {
+                    const selected = await open({
+                      directory: true,
+                      multiple: true,
+                      title: "Select Source Folder"
+                  })
+                    if (selected) setSource(selected)
+                  }}
+                  className="px-4 rounded-lg"
+                >
+                  📁 Folder
+                </Button>
+                <Button
+                  onClick={async () => {
+                    const selected = await open({
+                      multiple: true,
+                      filters: [{ name: "All Files", extensions: ["*"] }]
+                    })
+                    if (selected && selected.length > 0) {
+                      setSource(selected)
+                    }
+                  }}
+                  className="px-4 rounded-lg"
+                >
+                  📄 File(s)
+                </Button>
+              </div>
+            )}
           </div>
 
+          {/* Destination Path Section with SSH */}
           <div>
-            <label className="block text-base mb-2">Destination Path</label>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={dest}
-                onChange={(e) => setDest(e.target.value)}
-                className="flex-1 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
-              />
-              <Button
-                onClick={async () => {
-                  const selected = await open({
-                    directory: true,
-                    multiple: false,
-                    title: "Select Destination Folder"
-                  })
-                  if (selected) setDest(selected)
-                }}
-                className="px-4 rounded-lg"
-              >
-                📁 Folder
-              </Button>
+            <div className="flex items-center gap-4 mb-2">
+              <label className="block text-base">Destination Path</label>
+              <div className="flex items-center gap-2">
+                <Checkbox 
+                  id="destSsh"
+                  checked={destSshEnabled}
+                  onCheckedChange={(checked) => setDestSshEnabled(checked === true)}
+                />
+                <FieldLabel htmlFor="destSsh">SSH</FieldLabel>
+              </div>
             </div>
+            
+            {destSshEnabled ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <Checkbox 
+                    id="destSshIsAlias"
+                    checked={destSshIsAlias}
+                    onCheckedChange={(checked) => setDestSshIsAlias(checked === true)}
+                  />
+                  <FieldLabel htmlFor="destSshIsAlias">Use SSH Alias</FieldLabel>
+                </div>
+                
+                {destSshIsAlias ? (
+                  <Input
+                    type="text"
+                    placeholder="SSH Alias (e.g., server1, production-server)"
+                    value={destSshAlias}
+                    onChange={(e) => setDestSshAlias(e.target.value)}
+                    className="border rounded-lg px-4 py-3"
+                  />
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input
+                        type="text"
+                        placeholder="Username"
+                        value={destSshUsername}
+                        onChange={(e) => setDestSshUsername(e.target.value)}
+                        className="border rounded-lg px-4 py-3"
+                      />
+                      <Input
+                        type="text"
+                        placeholder="Host (e.g., 192.168.1.100)"
+                        value={destSshHost}
+                        onChange={(e) => setDestSshHost(e.target.value)}
+                        className="border rounded-lg px-4 py-3"
+                      />
+                    </div>
+                    <Input
+                      type="number"
+                      placeholder="Port (optional, default: 22)"
+                      value={destSshPort}
+                      onChange={(e) => setDestSshPort(e.target.value)}
+                      className="border rounded-lg px-4 py-3"
+                    />
+                  </>
+                )}
+                
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Remote Path"
+                    value={dest}
+                    onChange={(e) => setDest(e.target.value)}
+                    className="flex-1 border rounded-lg px-4 py-3"
+                  />
+                  <Button
+                    onClick={async () => {
+                      const selected = await open({
+                        directory: true,
+                        multiple: false,
+                        title: "Select Destination Folder"
+                      })
+                      if (selected) setDest(selected)
+                    }}
+                    className="px-4 rounded-lg"
+                  >
+                    📁 Folder
+                  </Button>
+                </div>
+                <p className="text-xs">
+                  Remote path format: /absolute/path/on/remote/server
+                </p>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={dest}
+                  onChange={(e) => setDest(e.target.value)}
+                  className="flex-1 border  rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                />
+                <Button
+                  onClick={async () => {
+                    const selected = await open({
+                      directory: true,
+                      multiple: false,
+                      title: "Select Destination Folder"
+                    })
+                    if (selected) setDest(selected)
+                  }}
+                  className="px-4 rounded-lg"
+                >
+                  📁 Folder
+                </Button>
+              </div>
+            )}
           </div>
 
+          {/* Rest of your existing UI (checkboxes, buttons, output, etc.) remains the same */}
           <div className="grid grid-cols-2 gap-4">
             <Field orientation="horizontal">
               <Checkbox 
@@ -279,34 +549,35 @@ function App() {
           </Button>
         </div>
 
+        {/* Output and Progress sections remain exactly the same as your existing code */}
         <div className="mt-8">
           <Button
             onClick={() => setOutputExpanded(!outputExpanded)}
-            className="w-full flex items-center justify-between text-lg mb-3 hover:text-zinc-300 transition-colors"
+            className="w-full flex items-center justify-between text-lg mb-3 transition-colors"
           >
             <h3>Output</h3>
             <span>{outputExpanded ? '▼' : '▶'}</span>
           </Button>
           
           {outputExpanded && (
-            <pre className="bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
+            <pre className="bg-black border rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
               {output || 'Click "Run rsync" to start...'}
             </pre>
           )}
         </div>
 
         {progress && (isRunning || progressData.percentage > 0) && (
-          <div className="mb-6 p-4 rounded-xl border border-zinc-800">
+          <div className="mb-6 p-4 rounded-xl border">
             <Progress value={progressData.percentage} className="w-full h-2" />
 
             {progressData.currentFile && (
-              <div className="mt-3 text-xs text-zinc-400 line-clamp-1">
+              <div className="mt-3 text-xs line-clamp-1">
                 📄 {progressData.currentFile}
               </div>
             )}
 
             {progressData.speed && (
-              <div className="text-xs text-zinc-500 mt-1">
+              <div className="text-xs mt-1">
                 ⚡ Speed: {progressData.speed}
               </div>
             )}
