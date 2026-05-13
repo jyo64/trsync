@@ -26,6 +26,7 @@ interface RsyncOptions {
   delete: boolean
   dry_run: boolean
   progress: boolean  // Add progress flag
+  recursive: boolean
   source_ssh?: SshOptions
   dest_ssh?: SshOptions
 }
@@ -44,14 +45,14 @@ function App() {
   const [sourceSshUsername, setSourceSshUsername] = useState('')
   const [sourceSshHost, setSourceSshHost] = useState('')
   const [sourceSshPort, setSourceSshPort] = useState('22')
-  const [sourceSshIsAlias, setSourceSshIsAlias] = useState(false)
+  const [sourceSshIsAlias, setSourceSshIsAlias] = useState(true)
   const [sourceSshAlias, setSourceSshAlias] = useState('')
   
   const [destSshEnabled, setDestSshEnabled] = useState(false)
   const [destSshUsername, setDestSshUsername] = useState('')
   const [destSshHost, setDestSshHost] = useState('')
   const [destSshPort, setDestSshPort] = useState('22')
-  const [destSshIsAlias, setDestSshIsAlias] = useState(false)
+  const [destSshIsAlias, setDestSshIsAlias] = useState(true)
   const [destSshAlias, setDestSshAlias] = useState('')
 
   const [source, setSource] = useState<string[]>(['/home/jyo/Downloads/Test.txt'])
@@ -61,6 +62,7 @@ function App() {
   const [deleteFlag, setDeleteFlag] = useState(false)
   const [dryRun, setDryRun] = useState(false)
   const [progress, setProgress] = useState(true)  // Add progress state
+  const [recursive, setRecursive] = useState(true)
   const [output, setOutput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [outputExpanded, setOutputExpanded] = useState(false)
@@ -196,6 +198,7 @@ function App() {
       delete: deleteFlag,
       dry_run: dryRun,
       progress,
+      recursive,
       source_ssh: sourceSshEnabled ? {
         enabled: true,
         username: sourceSshIsAlias ? sourceSshAlias : sourceSshUsername,
@@ -257,6 +260,7 @@ function App() {
                   <Checkbox 
                     id="sourceSshIsAlias"
                     checked={sourceSshIsAlias}
+                    disabled={true}
                     onCheckedChange={(checked) => setSourceSshIsAlias(checked === true)}
                   />
                   <FieldLabel htmlFor="sourceSshIsAlias">Use SSH Alias</FieldLabel>
@@ -400,6 +404,7 @@ function App() {
                   <Checkbox 
                     id="destSshIsAlias"
                     checked={destSshIsAlias}
+                    disabled={true}
                     onCheckedChange={(checked) => setDestSshIsAlias(checked === true)}
                   />
                   <FieldLabel htmlFor="destSshIsAlias">Use SSH Alias</FieldLabel>
@@ -537,6 +542,15 @@ function App() {
                 onCheckedChange={(checked) => setProgress(checked === true)}
               />
               <FieldLabel htmlFor="progress">Show Progress (--progress)</FieldLabel>
+            </Field>
+
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="recursive" 
+                checked={recursive} 
+                onCheckedChange={(checked) => setRecursive(checked === true)}
+              />
+              <FieldLabel htmlFor="recursive">Recurse Into Directories</FieldLabel>
             </Field>
           </div>
 

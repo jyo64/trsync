@@ -22,6 +22,7 @@ pub struct RsyncOptions {
     delete: bool,
     dry_run: bool,
     progress: bool,
+    recursive: bool,
     source_ssh: Option<SshOptions>,
     dest_ssh: Option<SshOptions>,
 }
@@ -32,20 +33,23 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
 
     // Build arguments
     if opts.archive {
-        cmd.arg("-a");
+        cmd.arg("--archive");
     }
     if opts.verbose {
-        cmd.arg("-v");
+        cmd.arg("--verbose");
     }
     if opts.delete {
         cmd.arg("--delete");
     }
     if opts.dry_run {
-        cmd.arg("-n");
+        cmd.arg("--dry-run");
     }
     if opts.progress {
         cmd.arg("--progress");
         cmd.arg("--info=progress2");
+    }
+    if opts.recursive {
+        cmd.arg("--recursive");
     }
 
     if let Some(ssh) = opts.source_ssh {

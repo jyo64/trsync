@@ -13,14 +13,11 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 
 - 📁 Graphical file and folder selection
 - 📦 Multi-file sync support
+- 🌐 SSH Support
 - 🔄 Powered by `rsync` for efficient delta transfers
 - ⚡ Fast and lightweight (Tauri-based desktop app)
 - 🦀 Secure backend logic in Rust
 - 🖥 Tested only on Fedora Linux
-
-
-
-
 
 
 ## Tech Stack
