@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
+import { open } from '@tauri-apps/plugin-dialog'
 
 interface RsyncOptions {
   source: string
@@ -68,28 +69,68 @@ function App() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-2">⟐ trsync</h1>
-        <p className="text-zinc-400 text-center mb-10">Simple Rsync GUI</p>
+        <h1 className="text-5xl font-bold text-center mb-2">Trsync</h1>
 
-        <div className="space-y-6 bg-zinc-900 p-8 rounded-2xl border border-zinc-700">
           <div>
             <label className="block text-sm mb-2">Source Path</label>
-            <input
-              type="text"
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={async () => {
+                  const selected = await open({
+                    directory: true,
+                    multiple: false,
+                    title: "Select Source Folder"
+                  })
+                  if (selected) setSource(selected)
+                }}
+                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+              >
+                📁 Folder
+              </button>
+              <button
+                onClick={async () => {
+                  const selected = await open({
+                    multiple: false,
+                    filters: [{ name: "All Files", extensions: ["*"] }]
+                  })
+                  if (selected) setSource(selected)
+                }}
+                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+              >
+                📄 File
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="block text-sm mb-2">Destination Path</label>
-            <input
-              type="text"
-              value={dest}
-              onChange={(e) => setDest(e.target.value)}
-              className="w-full bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
-            />
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={dest}
+                onChange={(e) => setDest(e.target.value)}
+                className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={async () => {
+                  const selected = await open({
+                    directory: true,
+                    multiple: false,
+                    title: "Select Destination Folder"
+                  })
+                  if (selected) setDest(selected)
+                }}
+                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+              >
+                📁 Folder
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -118,7 +159,8 @@ function App() {
           >
             {isRunning ? 'Running...' : '🚀 Run rsync'}
           </button>
-        </div>
+        
+        
 
         <div className="mt-8">
           <h3 className="text-lg mb-3">Output</h3>
