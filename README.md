@@ -13,7 +13,12 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 - 🔄 Powered by `rsync` for efficient delta transfers
 - ⚡ Fast and lightweight (Tauri-based desktop app)
 - 🦀 Secure backend logic in Rust
-- 🖥 Cross-platform (Windows, macOS, Linux via Tauri)
+- 🖥 Tested only on Fedora Linux
+
+
+
+
+
 
 ## Tech Stack
 
