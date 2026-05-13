@@ -6,7 +6,7 @@ use tauri::Emitter;
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RsyncOptions {
-    source: String,
+    source: Vec<String>,
     destination: String,
     archive: bool,
     verbose: bool,
@@ -36,8 +36,9 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
         cmd.arg("--progress");
         cmd.arg("--info=progress2");
     }
-
-    cmd.arg(&opts.source);
+    for src in &opts.source {
+        cmd.arg(src);
+    }
     cmd.arg(&opts.destination);
 
     // Spawn command with piped stdout/stderr

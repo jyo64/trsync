@@ -1,24 +1,9 @@
 import { useState, useEffect } from 'react'
-import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/plugin-dialog'
 import {
   Progress,
-  ProgressTrack,
-  ProgressIndicator,
-  ProgressLabel,
-  ProgressValue,
 } from "@/components/ui/progress"
-
-interface RsyncOptions {
-  source: string
-  destination: string
-  archive: boolean
-  verbose: boolean
-  delete: boolean
-  dry_run: boolean
-  progress: boolean  // Add progress flag
-}
 
 interface ProgressData {
   percentage: number
@@ -28,7 +13,7 @@ interface ProgressData {
 }
 
 function App() {
-  const [source, setSource] = useState('/home/jyo/Downloads/I/File.mp4')
+  const [source, setSource] = useState<string | string[]>('/home/jyo/Downloads/I/File.mp4')
   const [dest, setDest] = useState('/home/jyo/Downloads/O')
   const [archive, setArchive] = useState(false)
   const [verbose, setVerbose] = useState(true)
@@ -134,18 +119,7 @@ function App() {
     setOutput('')
     setProgressData({ percentage: 0, speed: '', size: '', currentFile: '' })
 
-    const opts: RsyncOptions = {
-      source,
-      destination: dest,
-      archive,
-      verbose,
-      delete: deleteFlag,
-      dry_run: dryRun,
-      progress,
-    }
-
     try {
-      const result = await invoke<string>('run_rsync', { opts })
       setOutput(prev => prev + '\n✅ Rsync completed successfully!\n')
       setProgressData(prev => ({ ...prev, percentage: 100 }))
     } catch (error: any) {
@@ -166,7 +140,7 @@ function App() {
             <div className="flex gap-2">
               <input
                 type="text"
-                value={source}
+                value={Array.isArray(source) ? source.join(', ') : source}
                 onChange={(e) => setSource(e.target.value)}
                 className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
               />
@@ -186,14 +160,16 @@ function App() {
               <button
                 onClick={async () => {
                   const selected = await open({
-                    multiple: false,
+                    multiple: true,
                     filters: [{ name: "All Files", extensions: ["*"] }]
                   })
-                  if (selected) setSource(selected)
+                  if (selected && selected.length > 0) {
+                    setSource(selected) // Store as array
+                  }
                 }}
                 className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
               >
-                📄 File
+                📄 File(s)
               </button>
             </div>
           </div>
