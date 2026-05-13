@@ -8,6 +8,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface RsyncOptions {
   source: string | string[]
@@ -155,19 +156,19 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white p-8">
+    <div className="min-h-screen text-white p-8">
       <div className="max-w-2xl mx-auto">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm mb-2">Source Path</label>
+            <label className="block text-base mb-2">Source Path</label>
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={Array.isArray(source) ? source.join(', ') : source}
                 onChange={(e) => setSource(e.target.value)}
-                className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                className="flex-1 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
               />
-              <button
+              <Button
                 onClick={async () => {
                   const selected = await open({
                     directory: true,
@@ -176,11 +177,11 @@ function App() {
                   })
                   if (selected) setSource(selected)
                 }}
-                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+                className="px-4 rounded-lg"
               >
                 📁 Folder
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={async () => {
                   const selected = await open({
                     multiple: true,
@@ -190,23 +191,23 @@ function App() {
                     setSource(selected) // Store as array
                   }
                 }}
-                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+                className="px-4 rounded-lg"
               >
                 📄 File(s)
-              </button>
+              </Button>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm mb-2">Destination Path</label>
+            <label className="block text-base mb-2">Destination Path</label>
             <div className="flex gap-2">
-              <input
+              <Input
                 type="text"
                 value={dest}
                 onChange={(e) => setDest(e.target.value)}
-                className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                className="flex-1 border border-zinc-600 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
               />
-              <button
+              <Button
                 onClick={async () => {
                   const selected = await open({
                     directory: true,
@@ -215,10 +216,10 @@ function App() {
                   })
                   if (selected) setDest(selected)
                 }}
-                className="bg-zinc-700 hover:bg-zinc-600 px-4 rounded-lg"
+                className="px-4 rounded-lg"
               >
                 📁 Folder
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -272,20 +273,20 @@ function App() {
           <Button
             onClick={runRsync}
             disabled={isRunning}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-zinc-700 py-4 rounded-xl font-semibold text-lg transition"
+            className="w-full py-4 rounded-xl font-semibold text-lg transition"
           >
             {isRunning ? 'Running...' : 'Run rsync'}
           </Button>
         </div>
 
         <div className="mt-8">
-          <button
+          <Button
             onClick={() => setOutputExpanded(!outputExpanded)}
             className="w-full flex items-center justify-between text-lg mb-3 hover:text-zinc-300 transition-colors"
           >
             <h3>Output</h3>
             <span>{outputExpanded ? '▼' : '▶'}</span>
-          </button>
+          </Button>
           
           {outputExpanded && (
             <pre className="bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
@@ -295,7 +296,7 @@ function App() {
         </div>
 
         {progress && (isRunning || progressData.percentage > 0) && (
-          <div className="mb-6 p-4 bg-zinc-900 rounded-xl border border-zinc-800">
+          <div className="mb-6 p-4 rounded-xl border border-zinc-800">
             <Progress value={progressData.percentage} className="w-full h-2" />
 
             {progressData.currentFile && (
