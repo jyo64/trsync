@@ -69,4 +69,4 @@ jobs:
           releaseBody: 'See the assets below to download and install this version.'
           releaseDraft: true   # Review the draft before publishing
           prerelease: false
-          args: --bundles deb,rpm, appimage
+          args: --bundles deb,rpm,appimage
