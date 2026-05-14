@@ -3,7 +3,7 @@ name = "trsync"
 version = "0.1.0"
 description = "A modern GUI Wrapper for rsync"
 authors = ["Jyothish Atheendran"]
-edition = "2026"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

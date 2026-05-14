@@ -308,7 +308,7 @@ function App() {
                     placeholder="Remote Path"
                     value={sourceToString(source)}
                     onChange={(e) => setSource(stringToSourceArray(e.target.value))}
-                    className="flex-1 border rounded-lg px-4 py-3"
+                    className="flex-1 border rounded-lg px-4 py-3 border-teal-500"
                   />
                   <Button
                     onClick={async () => {
@@ -351,7 +351,7 @@ function App() {
                   type="text"
                   value={sourceToString(source)}
                   onChange={(e) => setSource(stringToSourceArray(e.target.value))}
-                  className="flex-1 border rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                  className="flex-1 border rounded-lg px-4 py-3 border-teal-500"
                 />
                 <Button
                   onClick={async () => {
@@ -478,7 +478,7 @@ function App() {
                   type="text"
                   value={dest}
                   onChange={(e) => setDest(e.target.value)}
-                  className="flex-1 border  rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+                  className="flex-1 border rounded-lg px-4 py-3 focus:outline-none border-teal-500"
                 />
                 <Button
                   onClick={async () => {
@@ -504,8 +504,9 @@ function App() {
                 id="archive" 
                 checked={archive} 
                 onCheckedChange={(checked) => setArchive(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="archive">Archive (-a)</FieldLabel>
+              <FieldLabel htmlFor="archive">Archive</FieldLabel>
             </Field>
             
             <Field orientation="horizontal">
@@ -513,8 +514,9 @@ function App() {
                 id="verbose" 
                 checked={verbose} 
                 onCheckedChange={(checked) => setVerbose(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="verbose">Verbose (-v)</FieldLabel>
+              <FieldLabel htmlFor="verbose">Verbose</FieldLabel>
             </Field>
             
             <Field orientation="horizontal">
@@ -522,8 +524,9 @@ function App() {
                 id="delete" 
                 checked={deleteFlag} 
                 onCheckedChange={(checked) => setDeleteFlag(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="delete">--delete</FieldLabel>
+              <FieldLabel htmlFor="delete">Delete</FieldLabel>
             </Field>
             
             <Field orientation="horizontal">
@@ -531,8 +534,9 @@ function App() {
                 id="dryrun" 
                 checked={dryRun} 
                 onCheckedChange={(checked) => setDryRun(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="dryrun">Dry Run (-n)</FieldLabel>
+              <FieldLabel htmlFor="dryrun">Dry Run</FieldLabel>
             </Field>
             
             <Field orientation="horizontal">
@@ -540,8 +544,9 @@ function App() {
                 id="progress" 
                 checked={progress} 
                 onCheckedChange={(checked) => setProgress(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="progress">Show Progress (--progress)</FieldLabel>
+              <FieldLabel htmlFor="progress">Show Progress</FieldLabel>
             </Field>
 
             <Field orientation="horizontal">
@@ -549,8 +554,9 @@ function App() {
                 id="recursive" 
                 checked={recursive} 
                 onCheckedChange={(checked) => setRecursive(checked === true)}
+                className="border-teal-500"
               />
-              <FieldLabel htmlFor="recursive">Recurse Into Directories</FieldLabel>
+              <FieldLabel htmlFor="recursive">Recursive</FieldLabel>
             </Field>
           </div>
 
@@ -563,25 +569,8 @@ function App() {
           </Button>
         </div>
 
-        {/* Output and Progress sections remain exactly the same as your existing code */}
-        <div className="mt-8">
-          <Button
-            onClick={() => setOutputExpanded(!outputExpanded)}
-            className="w-full flex items-center justify-between text-lg mb-3 transition-colors"
-          >
-            <h3>Output</h3>
-            <span>{outputExpanded ? '▼' : '▶'}</span>
-          </Button>
-          
-          {outputExpanded && (
-            <pre className="bg-black border rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
-              {output || 'Click "Run rsync" to start...'}
-            </pre>
-          )}
-        </div>
-
         {progress && (isRunning || progressData.percentage > 0) && (
-          <div className="mb-6 p-4 rounded-xl border">
+          <div className="mb-6 p-4 rounded-xl border mt-5">
             <Progress value={progressData.percentage} className="w-full h-2" />
 
             {progressData.currentFile && (
@@ -597,6 +586,22 @@ function App() {
             )}
           </div>
         )}
+
+        <div className="mt-5">
+          <Button
+            onClick={() => setOutputExpanded(!outputExpanded)}
+            className="w-full flex items-center justify-between text-lg mb-3 transition-colors"
+          >
+            <h3>Output</h3>
+            <span>{outputExpanded ? '▼' : '▶'}</span>
+          </Button>
+          
+          {outputExpanded && (
+            <pre className="bg-black border rounded-xl p-6 font-mono text-sm h-96 overflow-auto whitespace-pre-wrap">
+              {output || 'Click "Run rsync" to start...'}
+            </pre>
+          )}
+        </div>
       </div>
     </div>
   )
