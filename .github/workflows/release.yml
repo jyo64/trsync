@@ -54,7 +54,7 @@ jobs:
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
-            patchelf
+            patchelf \ xdg-utils
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
@@ -69,4 +69,4 @@ jobs:
           releaseBody: 'See the assets below to download and install this version.'
           releaseDraft: true   # Review the draft before publishing
           prerelease: false
-          args: --bundles deb,rpm,appimage
+          args: --bundles deb,rpm
