@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   release-linux:
-    name: Build Linux Release (.deb + .rpm)
+    name: Build Linux Releases
     permissions:
       contents: write
     strategy:
@@ -50,6 +50,7 @@ jobs:
       - name: Install Linux system dependencies
         run: |
           sudo apt-get update
+          sudo add-apt-repository universe
           sudo apt-get install -y \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
