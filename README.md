@@ -38,7 +38,7 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 
 ### Pre-built Binaries
 
-You can download pre-built binaries for your platform from the [Releases](https://github.com/jyo64/trsync/releases) page. Available for both x86_64 and ARM64 architectures. ⚠️ Only .deb and .rpm packages are available at the moment.
+You can download pre-built binaries for your platform from the [Releases](https://github.com/jyo64/trsync/releases) page. Available for both x86_64 and ARM64 architectures. ⚠️ Only .deb, .rpm and AppImage packages are available at the moment.
 
 ## Development
 
