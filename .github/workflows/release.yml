@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ubuntu-22.04      # x86_64
-          - platform: ubuntu-22.04-arm  # aarch64 — free for public repos (Aug 2025+)
+          - platform: ubuntu-26.04      # x86_64
+          - platform: ubuntu-26.04-arm  # aarch64 — free for public repos (Aug 2025+)
 
     runs-on: ${{ matrix.platform }}
 
@@ -50,12 +50,11 @@ jobs:
       - name: Install Linux system dependencies
         run: |
           sudo apt-get update
-          sudo add-apt-repository universe
           sudo apt-get install -y \
             libwebkit2gtk-4.1-dev \
             libappindicator3-dev \
             librsvg2-dev \
-            patchelf \ 
+            patchelf \
             xdg-utils
 
       - name: Install frontend dependencies
@@ -71,4 +70,4 @@ jobs:
           releaseBody: 'See the assets below to download and install this version.'
           releaseDraft: true   # Review the draft before publishing
           prerelease: false
-          args: --bundles deb,rpm
+          args: --bundles deb,rpm,appimage
