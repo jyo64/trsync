@@ -4,7 +4,7 @@
 </p>
 
 
-A modern GUI wrapper for [`rsync`](https://github.com/RsyncProject/rsync) built with **Tauri (React frontend)** and **Rust backend**, designed to simplify file synchronization with an intuitive graphical interface.
+A modern GUI wrapper for [`rsync`](https://github.com/RsyncProject/rsync) built with **Tauri (React Frontend)** and **Rust Backend**, designed to simplify file synchronization with an intuitive graphical interface.
 
 ## Overview
 
@@ -18,8 +18,6 @@ Trsync provides a user-friendly way to interact with `rsync` without needing to 
 - 🔄 Powered by `rsync` for efficient delta transfers
 - ⚡ Fast and lightweight (Tauri-based desktop app)
 - 🦀 Secure backend logic in Rust
-- ⚠️ Tested only on Fedora Linux
-
 
 ## Tech Stack
 
@@ -55,6 +53,8 @@ Ensure you have the following installed:
 
 ### Setup
 
+Install the Tauri [Prerequisites](https://v2.tauri.app/start/prerequisites/)
+
 ```bash
 # Clone the repository
 git clone https://github.com/your-username/trsync.git
@@ -65,3 +65,9 @@ pnpm install
 
 # Run in development mode
 pnpm tauri dev
+```
+
+## Warning
+
+- ⚠️ Tested only on Fedora Linux.
+- 📦 Only .rpm package on x64 system was tested.
