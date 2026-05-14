@@ -19,8 +19,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: ubuntu-26.04      # x86_64
-          - platform: ubuntu-26.04-arm  # aarch64 — free for public repos (Aug 2025+)
+          - platform: ubuntu-24.04      # x86_64
+          - platform: ubuntu-24.04-arm  # aarch64 — free for public repos (Aug 2025+)
 
     runs-on: ${{ matrix.platform }}
 
