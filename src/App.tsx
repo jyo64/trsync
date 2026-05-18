@@ -25,8 +25,9 @@ interface RsyncOptions {
   verbose: boolean
   delete: boolean
   dry_run: boolean
-  progress: boolean  // Add progress flag
+  progress: boolean
   recursive: boolean
+  fsync: boolean
   source_ssh?: SshOptions
   dest_ssh?: SshOptions
 }
@@ -63,6 +64,7 @@ function App() {
   const [dryRun, setDryRun] = useState(false)
   const [progress, setProgress] = useState(true)  // Add progress state
   const [recursive, setRecursive] = useState(true)
+  const [fsync, setFsync] = useState(false)
   const [output, setOutput] = useState('')
   const [isRunning, setIsRunning] = useState(false)
   const [outputExpanded, setOutputExpanded] = useState(false)
@@ -199,6 +201,7 @@ function App() {
       dry_run: dryRun,
       progress,
       recursive,
+      fsync,
       source_ssh: sourceSshEnabled ? {
         enabled: true,
         username: sourceSshIsAlias ? sourceSshAlias : sourceSshUsername,
@@ -557,6 +560,16 @@ function App() {
                 className="border-teal-500"
               />
               <FieldLabel htmlFor="recursive">Recursive</FieldLabel>
+            </Field>
+
+            <Field orientation="horizontal">
+              <Checkbox 
+                id="fsync" 
+                checked={fsync} 
+                onCheckedChange={(checked) => setFsync(checked === true)}
+                className="border-teal-500"
+              />
+              <FieldLabel htmlFor="fsync">Fsync</FieldLabel>
             </Field>
           </div>
 

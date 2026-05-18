@@ -23,6 +23,7 @@ pub struct RsyncOptions {
     dry_run: bool,
     progress: bool,
     recursive: bool,
+    fsync:bool,
     source_ssh: Option<SshOptions>,
     dest_ssh: Option<SshOptions>,
 }
@@ -50,6 +51,9 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     }
     if opts.recursive {
         cmd.arg("--recursive");
+    }
+    if opts.recursive {
+        cmd.arg("--fsync");
     }
 
     if let Some(ssh) = opts.source_ssh {

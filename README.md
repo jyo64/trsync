@@ -1,6 +1,6 @@
 # <img width="30" height="30" alt="Logo" src="public/Logo.jpg" /> Trsync
 <p align="center">
-<img width="542" height="398" alt="Screenshot_20260514_011336" src="public/SS.png" />
+<img width="530" height="410" alt="Screenshot_20260514_011336" src="public/SS.png" />
 </p>
 
 
