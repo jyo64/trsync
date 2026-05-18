@@ -4,6 +4,12 @@ use std::process::{Command, Stdio};
 use std::io::{BufRead, BufReader};
 use tauri::Emitter;
 
+#[derive(serde::Serialize, Clone)]
+struct DirtyMemoryData {
+    dirty: String,
+    writeback: String,
+}
+
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct SshOptions {
     enabled: bool,
@@ -26,6 +32,27 @@ pub struct RsyncOptions {
     fsync:bool,
     source_ssh: Option<SshOptions>,
     dest_ssh: Option<SshOptions>,
+}
+
+// Helper function to format bytes to human-readable format
+fn format_memory_size(kb_value: &str) -> String {
+    // Parse the KB value (removes "kB" and any whitespace)
+    let clean = kb_value.trim_end_matches("kB").trim();
+    if let Ok(kb) = clean.parse::<f64>() {
+        let bytes = kb * 1024.0;
+        
+        if bytes >= 1024.0 * 1024.0 * 1024.0 { // GB
+            format!("{:.2} GB", bytes / (1024.0 * 1024.0 * 1024.0))
+        } else if bytes >= 1024.0 * 1024.0 { // MB
+            format!("{:.2} MB", bytes / (1024.0 * 1024.0))
+        } else if bytes >= 1024.0 { // KB
+            format!("{:.2} KB", bytes / 1024.0)
+        } else {
+            format!("{:.0} B", bytes)
+        }
+    } else {
+        kb_value.to_string()
+    }
 }
 
 #[tauri::command]
@@ -52,7 +79,7 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
     if opts.recursive {
         cmd.arg("--recursive");
     }
-    if opts.recursive {
+    if opts.fsync {
         cmd.arg("--fsync");
     }
 
@@ -141,6 +168,44 @@ async fn run_rsync(app: tauri::AppHandle, opts: RsyncOptions) -> Result<String, 
             if let Ok(line) = line {
                 let _ = app_clone.emit("rsync-error", line);
             }
+        }
+    });
+
+    let app_clone = app.clone();
+
+    std::thread::spawn(move || {
+        loop {
+            let output = Command::new("sh")
+                .arg("-c")
+                .arg("grep -E 'Dirty:|Writeback:' /proc/meminfo")
+                .output();
+
+            if let Ok(output) = output {
+                let text = String::from_utf8_lossy(&output.stdout);
+
+                let mut dirty = String::new();
+                let mut writeback = String::new();
+
+                for line in text.lines() {
+                    if line.starts_with("Dirty:") {
+                        dirty = line.replace("Dirty:", "").trim().to_string();
+                    }
+
+                    if line.starts_with("Writeback:") {
+                        writeback = line.replace("Writeback:", "").trim().to_string();
+                    }
+                }
+
+                let _ = app_clone.emit(
+                    "dirty-memory",
+                    DirtyMemoryData {
+                        dirty: format_memory_size(&dirty),
+                        writeback: format_memory_size(&writeback),
+                    },
+                );
+            }
+
+            std::thread::sleep(std::time::Duration::from_secs(1));
         }
     });
 

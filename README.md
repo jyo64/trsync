@@ -71,3 +71,4 @@ pnpm tauri dev
 
 - ⚠️ Tested only on Fedora Linux.
 - 📦 Only .rpm package on x64 system was tested.
+- SSH Password authentication is not supported. Only key-based authentication works. 

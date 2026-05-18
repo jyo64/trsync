@@ -18,6 +18,11 @@ interface SshOptions {
   is_alias: boolean
 }
 
+interface DirtyMemoryData {
+  dirty: string
+  writeback: string
+}
+
 interface RsyncOptions {
   source: string[]
   destination: string
@@ -75,6 +80,11 @@ function App() {
     currentFile: ''
   })
 
+  const [dirtyMemory, setDirtyMemory] = useState<DirtyMemoryData>({
+    dirty: '',
+    writeback: ''
+  })
+
   const parseProgress = (line: string) => {
     const trimmed = line.trim();
     if (!trimmed) return;
@@ -119,8 +129,14 @@ function App() {
   useEffect(() => {
     let outputUnlisten: () => void;
     let errorUnlisten: () => void;
+    let dirtyUnlisten: () => void;
 
     const setupListeners = async () => {
+
+      const dirtyListener = await listen<DirtyMemoryData>('dirty-memory', (event) => {
+        setDirtyMemory(event.payload)
+      })
+
       const outputListener = await listen<string>('rsync-output', (event) => {
         const line = event.payload;
         console.log("Progress Line - ", line);
@@ -143,6 +159,7 @@ function App() {
 
       outputUnlisten = outputListener;
       errorUnlisten = errorListener;
+      dirtyUnlisten = dirtyListener;
     };
 
     setupListeners();
@@ -150,6 +167,7 @@ function App() {
     return () => {
       outputUnlisten?.();
       errorUnlisten?.();
+      dirtyUnlisten?.();
     };
   }, [progress]);
 
@@ -330,6 +348,7 @@ function App() {
                     📁 Folder
                   </Button>
                   <Button
+                    disabled={isRunning}
                     onClick={async () => {
                       const selected = await open({
                         multiple: true,
@@ -357,6 +376,7 @@ function App() {
                   className="flex-1 border rounded-lg px-4 py-3 border-teal-500"
                 />
                 <Button
+                  disabled={isRunning}
                   onClick={async () => {
                     const selected = await open({
                       directory: true,
@@ -370,6 +390,7 @@ function App() {
                   📁 Folder
                 </Button>
                 <Button
+                  disabled={isRunning}
                   onClick={async () => {
                     const selected = await open({
                       multiple: true,
@@ -595,6 +616,13 @@ function App() {
             {progressData.speed && (
               <div className="text-xs mt-1">
                 ⚡ Speed: {progressData.speed}
+              </div>
+            )}
+
+            {(dirtyMemory.dirty || dirtyMemory.writeback) && (
+              <div className="text-xs mt-1 space-y-1">
+                <div>💾 Dirty: {dirtyMemory.dirty}</div>
+                <div>📝 Writeback: {dirtyMemory.writeback}</div>
               </div>
             )}
           </div>
