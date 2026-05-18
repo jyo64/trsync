@@ -46,8 +46,8 @@ You can download pre-built binaries for your platform from the [Releases](https:
 
 Ensure you have the following installed:
 
-- Rust (latest stable)
-- Node.js (LTS recommended)
+- [Rust](https://rust-lang.org/) 🦀
+- [PNPM](https://pnpm.io/) 📦
 - `rsync` (pre-installed on macOS/Linux; Windows requires setup)
 - Tauri prerequisites (platform-specific dependencies)
 
@@ -71,4 +71,4 @@ pnpm tauri dev
 
 - ⚠️ Tested only on Fedora Linux.
 - 📦 Only .rpm package on x64 system was tested.
-- SSH Password authentication is not supported. Only key-based authentication works. 
+- 🔑 SSH Password authentication is not supported. Only key-based authentication works. 
