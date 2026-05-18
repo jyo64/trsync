@@ -55,8 +55,8 @@ function App() {
   const [destSshIsAlias, setDestSshIsAlias] = useState(true)
   const [destSshAlias, setDestSshAlias] = useState('')
 
-  const [source, setSource] = useState<string[]>(['/home/jyo/Downloads/Test.txt'])
-  const [dest, setDest] = useState('/home/jyo/Downloads/O')
+  const [source, setSource] = useState<string[]>(['/home/File.txt'])
+  const [dest, setDest] = useState('/home/')
   const [archive, setArchive] = useState(false)
   const [verbose, setVerbose] = useState(true)
   const [deleteFlag, setDeleteFlag] = useState(false)

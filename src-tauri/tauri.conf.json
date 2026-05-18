@@ -30,13 +30,15 @@
     "linux": {
       "deb": {
         "depends": [
-          "zenity"
+          "zenity",
+          "rsync"
         ]
       },
 
       "rpm": {
         "depends": [
-          "zenity"
+          "zenity",
+          "rsync"
         ]
       }
     },
