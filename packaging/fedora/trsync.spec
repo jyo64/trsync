@@ -34,8 +34,8 @@ via an intuitive interface and executes synchronization securely through a Rust 
 %autosetup -n %{app_name}-%{upstream_version}
 
 %build
-pnpm install --frozen-lockfile
-pnpm tauri build --bundles none
+pnpm install
+pnpm tauri build
 
 %install
 # Install binary
