@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Trsync
+Exec=trsync
+Icon=com.jyo.trsync
+Type=Application
+Categories=Utility;FileTransfer;
+Comment=A modern GUI for rsync
+Terminal=false
