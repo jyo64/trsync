@@ -1,14 +1,15 @@
 %define app_name trsync
 %define app_id com.jyo.trsync
+%global upstream_version 1.0.8
 
 Name:           %{app_name}
-Version:        %{version}
+Version:        %{upstream_version}
 Release:        1%{?dist}
 Summary:        A modern GUI wrapper for rsync built with Tauri
 
 License:        MIT
 URL:            https://github.com/jyo64/trsync
-Source0:        https://github.com/jyo64/trsync/archive/refs/tags/v%{version}.tar.gz
+Source0:        https://github.com/jyo64/trsync/archive/refs/tags/v%{upstream_version}.tar.gz
 
 BuildRequires:  cargo
 BuildRequires:  rust
@@ -30,7 +31,7 @@ Trsync provides a user-friendly GUI for rsync. It allows selecting files and dir
 via an intuitive interface and executes synchronization securely through a Rust backend.
 
 %prep
-%autosetup -n %{app_name}-%{version}
+%autosetup -n %{app_name}-%{upstream_version}
 
 %build
 pnpm install --frozen-lockfile
@@ -58,5 +59,5 @@ done
 %{_datadir}/icons/hicolor/*/apps/%{app_id}.png*
 
 %changelog
-* Wed Jun 03 2026 Jyothish Atheendran <athi.jyothish@gmail.com> - %{version}-1
+* Wed Jun 03 2026 Jyothish Atheendran <athi.jyothish@gmail.com> - %{upstream_version}-1
 - Initial COPR release
